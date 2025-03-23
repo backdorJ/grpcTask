@@ -1,0 +1,17 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcHw.Task2.Server";
+package token;
+
+service TokenService {
+  rpc GetJwtToken(GetJwtTokenRequest) returns(GetJwtTokenResponse);
+}
+
+message GetJwtTokenRequest {
+  string username = 1;
+  int32 age = 2;
+}
+
+message GetJwtTokenResponse {
+  string token = 1;
+}

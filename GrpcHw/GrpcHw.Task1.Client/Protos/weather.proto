@@ -1,0 +1,16 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcHw.Task1.Server";
+
+package weather;
+
+service WeatherService {
+  rpc GetWeather (GetWeatherRequest) returns (stream GetWeatherResponse) {}
+}
+
+message GetWeatherRequest {}
+
+message GetWeatherResponse {
+  string time = 1;
+  string temperature_2m = 2;
+}

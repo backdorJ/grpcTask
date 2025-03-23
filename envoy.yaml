@@ -1,0 +1,51 @@
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8080
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                route_config:
+                  virtual_hosts:
+                    - name: backend
+                      domains: ["*"]
+                      cors:
+                        allow_origin_string_match:
+                          - prefix: "http://localhost:3000"
+                          - prefix: "http://front:3000"
+                          - prefix: "*"
+                        allow_methods: "*"
+                        allow_headers: "*"
+                        expose_headers: "*"
+                        allow_credentials: false
+                      routes:
+                        - match:
+                            prefix: "/auth.AuthService"
+                          route:
+                            cluster: service1
+                        - match:
+                            prefix: "/chat.ChatService"
+                          route:
+                            cluster: service1
+                http_filters:
+                  - name: envoy.filters.http.cors
+                  - name: envoy.filters.http.router
+  clusters:
+    - name: service1
+      type: STRICT_DNS
+      connect_timeout: 100000000s
+      load_assignment:
+        cluster_name: service1
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: grpchw.task3.server
+                      port_value: 9090

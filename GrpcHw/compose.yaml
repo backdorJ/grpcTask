@@ -1,0 +1,67 @@
+﻿version: '3.8'
+
+services:
+  grpchw.task3.server:
+    image: grpchw.task3.server
+    build:
+      context: .
+      dockerfile: GrpcHw.Task3.Server/Dockerfile
+    ports:
+      - "9090:9090"  # Порты для gRPC сервиса
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionString=Server=postgres;Port=5432;Database=grpcHw3;User Id=postgres;Password=root;
+      - Jwt__Issuer=123
+      - Jwt__Audience=asda
+      - Jwt__Key=1asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdsadasdasdasdsad
+    networks:
+      - my_network
+    
+  
+  front:
+    build:
+      context: ../front/  # Путь к директории с фронтендом
+      dockerfile: Dockerfile  # Dockerfile для фронтенда (убедитесь, что он есть в директории)
+    ports:
+      - "3000:3000"  # Открываем порт 3000 для фронтенда
+    depends_on:
+      - grpchw.task3.server  # Фронтенд зависит от гRPC сервиса
+    networks:
+      - my_network
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080  # Укажите URL API для фронтенда
+
+  postgres:
+    image: postgres:15  # Или нужная версия
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: grpcHw3
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+
+  envoy:
+    image: envoyproxy/envoy:v1.15.0  # Используйте ваш образ Envoy
+    container_name: envoy
+    ports:
+      - "8080:8080"
+    volumes:
+      - C:\Users\Damir\Desktop\grpcTask\envoy.yaml:/etc/envoy/envoy.yaml  # Прокси конфигурация
+    depends_on:
+      - grpchw.task3.server  # Envoy зависит от бэкенда
+    networks:
+      - my_network
+
+volumes:
+  postgres_data:
+
+networks:
+  my_network:
+    driver: bridge
